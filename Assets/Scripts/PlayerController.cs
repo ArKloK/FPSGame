@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -12,6 +14,7 @@ public class PlayerController : MonoBehaviour
 
     public CharacterController player;
     public float playerSpeed;
+    private float sprintSpeed;
     public float gravity;
     public float fallVelocity;
     public float jumpForce;
@@ -28,11 +31,50 @@ public class PlayerController : MonoBehaviour
     public float slideVelocity;
     public float slopeForceDown;
 
+    public float sensibility;
+    public GameObject spine;
+
+    //variables animacion
+    private Animator playerAnimator;
+
 
     // Cargamos el componente CharacterController en la variable player al iniciar el script
     void Start()
     {
         player = GetComponent<CharacterController>();
+        Cursor.lockState = CursorLockMode.Locked;
+        playerAnimator = GetComponent<Animator>();
+        sprintSpeed = playerSpeed * 2;
+    }
+    private void updateMouseLook()
+    {
+        //Recogemos los valores de movimiento del raton
+        float hor = Input.GetAxis("Mouse X");
+        float vert = Input.GetAxis("Mouse Y");
+
+        if (hor != 0)
+        {
+            //Rotamos al jugador
+            player.transform.Rotate(Vector3.up * hor * sensibility);
+        }
+
+        if (vert != 0)
+        {
+            Vector3 rotation = mainCamera.transform.localEulerAngles;
+
+            rotation.x = (rotation.x - vert * sensibility + 360) % 360;
+            Debug.Log(rotation.x);
+            if (rotation.x > 20 && rotation.x < 180) { rotation.x = 20; }
+            else
+            if (rotation.x < 340 && rotation.x > 180) { rotation.x = 340; }
+
+            //rotation.x = (rotation.x + vert * sensibility + 360) % 360;
+            //Debug.Log(rotation.x);
+            //if (rotation.x > 40 && rotation.x < 180) { rotation.x = 40; }else
+            //if (rotation.x < 0 || rotation.x > 180) { rotation.x = 0; }
+
+            mainCamera.transform.localEulerAngles = rotation;
+        }
     }
 
     // Bucle de juego que se ejecuta en cada frame
@@ -45,17 +87,19 @@ public class PlayerController : MonoBehaviour
         playerInput = new Vector3(horizontalMove, 0, verticalMove); //los almacenamos en un Vector3
         playerInput = Vector3.ClampMagnitude(playerInput, 1); //Y limitamos su magnitud a 1 para evitar aceleraciones en movimientos diagonales
 
-        //CamDirection(); //Llamamos a la funcion CamDirection()
+        playerAnimator.SetFloat("playerWalkVelocity", playerInput.magnitude * playerSpeed);
 
-        movePlayer = playerInput ;  //Almacenamos en movePlayer el vector de movimiento corregido con respecto a la posicion de la camara.
+        CamDirection(); //Llamamos a la funcion CamDirection()
+
+        movePlayer = playerInput.x * camRight + playerInput.z * camForward;
 
         movePlayer = movePlayer * playerSpeed;  //Y lo multiplicamos por la velocidad del jugador "playerSpeed"
-
-       // player.transform.LookAt(player.transform.position + movePlayer); //Hacemos que nuestro personaje mire siempre en la direccion en la que nos estamos moviendo.
 
         SetGravity(); //Llamamos a la funcion SetGravity() para aplicar la gravedad
 
         PlayerSkills(); //Llamamos a la funcion PlayerSkills() para invocar las habilidades de nuestro personaje
+
+        updateMouseLook();
 
         player.Move(movePlayer * Time.deltaTime); //Y por ultimo trasladamos los datos de movimiento a nuestro jugador * Time.deltaTime 
                                                   //De este modo mantenemos unos FPS estables independientemente de la potencia del equipo.
@@ -86,7 +130,32 @@ public class PlayerController : MonoBehaviour
         {
             fallVelocity = jumpForce; //La velocidad de caida pasa a ser igual a la velocidad de salto
             movePlayer.y = fallVelocity; //Y pasamos el valor a movePlayer.y
+            playerAnimator.SetTrigger("playerJump");
         }
+        else if (Input.GetKey(KeyCode.LeftShift) /*&& player.isGrounded -> para que no haga sprint en el aire*/)
+        {
+            playerSpeed = sprintSpeed;
+        }
+        else
+        {
+            playerSpeed = sprintSpeed / 2;
+        }
+
+        if (Input.GetButtonDown("Fire2"))
+        {
+            Debug.Log("Apuntando");
+        }
+
+        if (Input.GetButtonDown("Fire1"))
+        {
+            Debug.Log("Disparando");
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            Debug.Log("Recargando");
+        }
+
     }
 
     //Funcion para la gravedad.
@@ -104,7 +173,9 @@ public class PlayerController : MonoBehaviour
             //aceleramos la caida cada frame restando el valor de la gravedad * Time.deltaTime.
             fallVelocity -= gravity * Time.deltaTime;
             movePlayer.y = fallVelocity;
+            playerAnimator.SetFloat("playerVerticalVelocity", player.velocity.y);
         }
+        playerAnimator.SetBool("isGrounded", player.isGrounded);
 
         SlideDown(); //Llamamos a la funcion SlideDown() para comprobar si estamos en una pendiente
     }
@@ -130,5 +201,10 @@ public class PlayerController : MonoBehaviour
     {
         //Almacenamos la normal del plano contra el que hemos chocado en hitNormal.
         hitNormal = hit.normal;
+    }
+
+    private void OnAnimatorMove()
+    {
+
     }
 }

@@ -706,11 +706,11 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
-  cloudProjectId: 
+  cloudProjectId: 95ba3286-ea46-4d4c-89a3-8a94e04997a6
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 
-  organizationId: 
+  projectName: FPSGame
+  organizationId: carlos-camacho
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   playerDataPath: 
