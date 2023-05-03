@@ -63,7 +63,6 @@ public class PlayerController : MonoBehaviour
             Vector3 rotation = mainCamera.transform.localEulerAngles;
 
             rotation.x = (rotation.x - vert * sensibility + 360) % 360;
-            Debug.Log(rotation.x);
             if (rotation.x > 20 && rotation.x < 180) { rotation.x = 20; }
             else
             if (rotation.x < 340 && rotation.x > 180) { rotation.x = 340; }
