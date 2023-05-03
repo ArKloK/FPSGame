@@ -1,4 +1,0 @@
-repository "FPSGame@local"
-  path "/"
-    smartbranch "/main" 
-     
