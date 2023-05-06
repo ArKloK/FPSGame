@@ -37,6 +37,8 @@ public class PlayerController : MonoBehaviour
     //variables animacion
     private Animator playerAnimator;
 
+    public int playerHealth = 100;
+    public int currentHealth;
 
     // Cargamos el componente CharacterController en la variable player al iniciar el script
     void Start()
@@ -45,6 +47,7 @@ public class PlayerController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         playerAnimator = GetComponent<Animator>();
         sprintSpeed = playerSpeed * 2;
+        currentHealth = playerHealth;
     }
     private void updateMouseLook()
     {
@@ -200,6 +203,20 @@ public class PlayerController : MonoBehaviour
     {
         //Almacenamos la normal del plano contra el que hemos chocado en hitNormal.
         hitNormal = hit.normal;
+    }
+
+    public void DoDamage(int damage)
+    {
+        currentHealth -= damage;
+
+        if (currentHealth <= 0) playerDie();
+    }
+
+    private void playerDie()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Destroy(gameObject, 1.0f);
+        Debug.Log("YOU DIED");
     }
 
     private void OnAnimatorMove()
